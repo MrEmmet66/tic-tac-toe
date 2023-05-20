@@ -17,9 +17,8 @@ namespace KrestikiNoliki
     {
         static void Main(string[] args)
         {
-            GameCondition gc = new GameCondition();
             bool isPlaying = true;
-            char[,] map = CreateMap();
+            char[] map = CreateMap();
 
             Console.Title = "MBF.EXE WATAFAK";
             DrawMap(map);
@@ -38,6 +37,10 @@ namespace KrestikiNoliki
                         Console.WriteLine("Draw! Kakhovka and Myropil equals");
                         isPlaying = false;
                         break;
+                    case GameCondition.Lose:
+                        Console.WriteLine("Kakhovka AI in won!");
+                        isPlaying = false;
+                        break;
 
                 }
 
@@ -46,10 +49,8 @@ namespace KrestikiNoliki
 
                 Console.WriteLine("Turn 1:");
                 int t1 = int.Parse(Console.ReadLine());
-                Console.WriteLine("Turn 2: ");
-                int t2 = int.Parse(Console.ReadLine());
 
-                map[t1, t2] = turnChar;
+                map[t1] = turnChar;
                 DrawMap(map);
 
                 if (isPlaying == true)
@@ -58,7 +59,7 @@ namespace KrestikiNoliki
 
         }
 
-        static void Enemy(ref char[,] map, ref char turnChar, ref bool gameState)
+        static void Enemy(ref char[] map, ref char turnChar, ref bool gameState)
         {
             bool repeatState = true;
             turnChar = 'X';
@@ -66,28 +67,20 @@ namespace KrestikiNoliki
 
             while (repeatState)
             {
-                int t1 = rnd.Next(0, 3);
-                int t2 = rnd.Next(0, 3);
-                if (map[t1, t2] == '.')
+                int t1 = rnd.Next(0, 9);
+                if (map[t1] == '.')
                 {
                     repeatState = false;
-                    map[t1, t2] = turnChar;
+                    map[t1] = turnChar;
                     DrawMap(map);
-                    switch (CheckWin(map, turnChar))
-                    {
-                        case GameCondition.Win:
-                            Console.WriteLine("Kakhovka AI is won!");
-                            gameState = false;
-                            break;
-                    }
                 }
             }
 
         }
 
-        static GameCondition CheckWin(char[,] map, char turnChar)
+        static GameCondition CheckWin(char[] map, char turnChar)
         {
-
+            char winChar = ' ';
             int kostilCount = 0;
             foreach (char c in map)
             {
@@ -99,59 +92,53 @@ namespace KrestikiNoliki
             {
                 return GameCondition.Draw;
             }
-            //Row 1
-            if (map[0, 0] == turnChar && map[0, 1] == turnChar && map[0, 2] == turnChar)
+            int[][] winCoords = new int[][]
+            {
+                new int[] {0, 1, 2},
+                new int[] {3, 4, 5},
+                new int[] {6, 7, 8},
+                new int[] {0, 3, 6},
+                new int[] {1, 4, 7},
+                new int[] {2, 5, 8},
+                new int[] {0, 4, 8},
+                new int[] {2, 4, 6}
+            };
+
+            foreach(var coord in winCoords)
+            {
+                if (map[coord[0]] == map[coord[1]] && map[coord[1]] == map[coord[2]])
+                    winChar = map[coord[0]];
+            }
+
+            if (winChar != '.' && winChar == 'O')
                 return GameCondition.Win;
-            // Diagonal 1
-            else if (map[0, 0] == turnChar && map[1, 1] == turnChar && map[2, 2] == turnChar)
-                return GameCondition.Win;
-            // Column 1
-            else if (map[0, 0] == turnChar && map[1, 0] == turnChar && map[2, 0] == turnChar)
-                return GameCondition.Win;
-            // Diagonal 2
-            else if (map[0, 2] == turnChar && map[1, 1] == turnChar && map[2, 0] == turnChar)
-                return GameCondition.Win;
-            //Row 3
-            else if (map[2, 0] == turnChar && map[2, 1] == turnChar && map[2, 2] == turnChar)
-                return GameCondition.Win;
-            // Row 2
-            else if (map[1, 0] == turnChar && map[1, 1] == turnChar && map[1, 2] == turnChar)
-                return GameCondition.Win;
-            // Column 3
-            else if (map[0, 2] == turnChar && map[1, 2] == turnChar && map[2, 2] == turnChar)
-                return GameCondition.Win;
-            //Column 2
-            else if (map[0, 1] == turnChar && map[1, 1] == turnChar && map[2, 1] == turnChar)
-                return GameCondition.Win;
+            else if (winChar != '.' && winChar == 'X')
+                return GameCondition.Lose;
             else
                 return GameCondition.Running;
 
         }
 
-        static char[,] CreateMap()
+        static char[] CreateMap()
         {
-            char[,] map = new char[3, 3];
-            for (int i = 0; i < map.GetLength(0); i++)
+            char[] map = new char[9];
+            for (int i = 0; i < map.Length; i++)
             {
-                for (int j = 0; j < map.GetLength(1); j++)
-                {
-                    map[i, j] = '.';
-                }
+                map[i] = '.';
             }
 
             return map;
         }
 
-        static void DrawMap(char[,] map)
+        static void DrawMap(char[] map)
         {
             Console.Clear();
-            for (int i = 0; i < map.GetLength(0); i++)
+            for (int i = 0; i < map.Length; i++)
             {
-                for (int j = 0; j < map.GetLength(1); j++)
-                {
-                    Console.Write(map[i, j] + " ");
-                }
-                Console.WriteLine();
+                Console.Write(map[i] + " ");
+
+                if((i + 1) % 3 == 0)
+                    Console.WriteLine();
             }
         }
     }
